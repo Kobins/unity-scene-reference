@@ -1,0 +1,8 @@
+{
+  "name": "com.unity.scenereference",
+  "displayName": "SceneReference",
+  "version": "1.0.0",
+  "unity": "2019.2",
+  "description": "A library that allows you to reference scenes in Unity",
+  "type": "library"
+}

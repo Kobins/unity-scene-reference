@@ -1,76 +1,91 @@
-Disclaimer (2022)
-===
+# Scene레퍼런스 1.0.9
 
-This project is no longer being actively maintained, and should be considered archived.
+###### 해당 AnimatorPro는 SBS 게임아카데미 강사 - 선진송 개발자, NK Studio - 김한용 개발자가 제작하였습니다.
 
-If you do find it useful you are absolutely encouraged to fork it and feel free to reach out so your work can be linked to from here.
+###### 해당 Asset의 기능은?  
 
-Here are some relevant projects to check out:
-- **[Eflatun.SceneReference](https://github.com/starikcetin/Eflatun.SceneReference)** by *[starikcetin](https://github.com/starikcetin)*
+현재 Animator에서 파라미터에 대하여 값을 Get, Set할 때 ```SetInteger GetInteger , SetFloat GetFloat , SetBool GetBool ... ``` 
+이런식으로 제어하고자 하는 파라미터의 자료형에 맞춰 함수를 써야되는 번거로운 부분이 있습니다.
+
+하지만 AnimatorPro의 ``` SetParam GetParam ```을 사용했을 때 자료형에 맞춰 함수를 써야되는 번거로움을 벗어날 수 있습니다.
+
+1.0.1
+'[AnimatorEnter("Layout.AnimClip")]', '[AnimatorStay("Layout.AnimClip")]', '[AnimatorExit("Layout.AnimClip")]' 애트리뷰트가 추가되었습니다.
+
+1.0.0
+'SetParam', 'GetParam'이 추가되었습니다.
 
 
----
+# 사용법
 
-<br />
+``` C#
+//상단에 해당 네임 스페이스를 추가합니다.
+using UnityEngine.AnimatorPro;
 
+//[RequireComponent(typeof(AnimatorPro))]를 클래스 위에 추가해줍니다.
+[RequireComponent(typeof(AnimatorPro))]
+public class yourClass : MonoBehaviour
+{
+  //전역 변수로 AnimatorPro 자료형 객체를 선언합니다.
+  private AnimatorPro animatorPro;
 
-[![openupm](https://img.shields.io/npm/v/com.johannesmp.unityscenereference?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.johannesmp.unityscenereference/)
+  //사용할 Animator 자료형 객체를 선언합니다.
+  public Animator anim;
 
-This repository has UPM support. You can install this plugin to your project using [OpenUPM](https://openupm.com/packages/com.johannesmp.unityscenereference/):
+  private void Awake()
+  {
+    //객체를 생성하여 할당해줍니다. 
+    animatorPro = GetComponent<AnimatorPro>();
+
+    //Init 함수에 사용할 애니메이터 넘겨줍니다.
+    animatorPro.Init(anim);
+  }
+
+  private void Update()
+  {
+    //이동 애니메이션 재생
+    var xx = Input.GetAxisRaw("Horizontal");
+
+  //animatorPro.SetParam("Parameter Name", [int, flaot, bool] : Value );
+    animatorPro.SetParam("Move", Mathf.Abs(xx));
+
+    //공격 애니메이션 재생
+    if (Input.GetKeyDown(KeyCode.Space))
+       animatorPro.SetTrigger("Attack");
+
+  //다음과 같이 Animator 자료형 변수를 사용했던 느낌 그대로 사용해주시면 되겠습니다.
+  }    
+}
 ```
-npm install -g openupm-cli
-openupm add com.johannesmp.unityscenereference
+
+---------------------------------------------------------------------------------------
+```c#
+//애니메이션 클립을 해쉬 값으로 전역변수 선언
+private static readonly int ID_Move = Animator.StringToHash("Move");
+
+//이동 애니메이션 재생
+var xx = Input.GetAxisRaw("Horizontal");
+animatorPro.SetParam(ID_Move, Mathf.Abs(xx));
+
+//파라미터 네임을 String으로 설정할 수도 있지만, 추천드리는 방법은 Hash로 선언해서 파라미터 ID를 입력해주는것이  
+효율에 좋습니다.
+```
+---------------------------------------------------------------------------------------
+```c#
+[AnimatorEnter("Base Layout.AnimClipName")]
+public void AttackAnimEnter() =>
+   Debug.Log("Anim to Enter");
+    
+[AnimatorStay("Base Layout.AnimClipName")]
+public void AttackAnimStay() =>
+   Debug.Log("Anim to Stay");
+    
+[AnimatorExit("Base Layout.AnimClipName")]
+public void AttackAnimExit() =>
+   Debug.Log("anim to Exit");
+   
+//애트리뷰트 적용으로만으로도 해당 애니메이션 상태에 따라 함수를 실행킬 수 있습니다.
+   
 ```
 
----
-
-What is this?
----
-
-A `SceneReference` wrapper class that uses [ISerializationCallbackReceiver](https://docs.unity3d.com/ScriptReference/ISerializationCallbackReceiver.html) and a custom `PropertyDrawer`to provide safe, user-friendly scene references in scripts.
-
-![alt text][1]
-
-Why is this needed?
----
-
-Sooner or later Unity Developers will want to reference a Scene from script, so they can load it at runtime using the [SceneManager](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html).
-
-We can store a string of the scene's path (as the [SceneAsset documentation](https://docs.unity3d.com/ScriptReference/SceneAsset.html) suggests), but that is really not ideal for production: If the scene asset is ever moved or renamed, then our stored path is broken. 
-
-Unity has already solved this problem for assets using [Object references][2]. Using [AssetDatabasse](https://docs.unity3d.com/ScriptReference/AssetDatabase.html) you can find the path for a given asset. The problem there unfortunately is that we don't have access to AssetDatabase at runtime, since it is part of the `UnityEditor` Assembly.
-
-So to be able to reliably use a scene both in editor and at runtime we need two pieces of serialized information: A reference to the SceneAsset object, and a string path that can be passed into SceneManager at runtime.
-
-We can create our own Wrapper class that uses [`ISerializationCallbackReceiver`](https://docs.unity3d.com/ScriptReference/ISerializationCallbackReceiver.html) to ensure that the stored path is always valid based on the specified SceneAsset Object.
-
-This `SceneReference` class is an example implementation of this idea.
-
-Key features
----
-
-- Custom PropertyDrawer that displays the current Build Settings status, including [BuildIndex](https://docs.unity3d.com/ScriptReference/SceneManagement.Scene-buildIndex.html) and convenient buttons for managing it with destructive action confirmation dialogues.
-- If (and only if) the serialized Object reference is invalid but the path is still valid (for example if someone merged incorrectly) will recover object using path.
-- Buttons collapse to smaller text if full text cannot be displayed.<br>![][3]
-- Include detailed tooltips and respects Version Control if build settings are not checked out (tested with [Perforce](https://docs.unity3d.com/Manual/perForceIntegration.html)).<br>![][4]
-- It's a single drop-in script. You're welcome to split the Editor-only PropertyDrawer and helpers into their own Editor scripts if you'd like, just for convenience I've put it all in one self-contained file here.
-
----
-
-For easy runtime verification I've also provided a testing Monobehaviour that lets you view and load scenes via buttons when in playmode:<br/>![][5]
-
-  [1]: https://i.imgur.com/DSYi0kd.png
-  [2]: https://unity3d.com/learn/tutorials/topics/best-practices/assets-objects-and-serialization
-  [3]: https://i.imgur.com/BQLHrUt.png
-  [4]: https://i.imgur.com/Mu4ISTp.png
-  [5]: https://i.imgur.com/q2FQSES.png
-
-
----
-
-Acknowledgements
-===
-
-- This Project was originally created as a [github gist by JohannesMP](https://gist.github.com/JohannesMP/ec7d3f0bcf167dab3d0d3bb480e0e07b) and then moved to this Github Repo
-- Special thanks to **[Starikcetin](https://github.com/starikcetin)** for contributing and continuing to maintain this project while I was unable to do so. Definitely check out their own implementation at **[Eflatun.SceneReference](https://github.com/starikcetin/Eflatun.SceneReference)**!
-- Thank you also for contributions from **[der-hugo](https://github.com/der-hugo)**, **[hbollon](https://github.com/hbollon)**, **[joaoborks](https://github.com/joaoborks)**, **[NibbleByte](https://github.com/NibbleByte)** and **[LingDar](https://github.com/LingDar)**
+해당 Asset을 사용해주셔서 감사합니다.
