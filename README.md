@@ -1,8 +1,6 @@
-# Scene레퍼런스 1.0.9
+# SceneReference
 
-###### 해당 AnimatorPro는 SBS 게임아카데미 강사 - 선진송 개발자, NK Studio - 김한용 개발자가 제작하였습니다.
-
-###### 해당 Asset의 기능은?  
+  
 
 현재 Animator에서 파라미터에 대하여 값을 Get, Set할 때 ```SetInteger GetInteger , SetFloat GetFloat , SetBool GetBool ... ``` 
 이런식으로 제어하고자 하는 파라미터의 자료형에 맞춰 함수를 써야되는 번거로운 부분이 있습니다.
@@ -15,6 +13,11 @@
 1.0.0
 'SetParam', 'GetParam'이 추가되었습니다.
 
+# 설치방법
+
+```` 
+https://github.com/NK-Studio/unity-scene-reference.git#UPM
+````
 
 # 사용법
 
