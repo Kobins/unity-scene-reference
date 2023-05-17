@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -35,7 +36,7 @@ namespace UnityEngine
 
         // Player builds will use the path stored here. Should be updated in the editor or during build.
         // If scene is deleted, path will remain.
-        [SerializeField] private string m_ScenePath = string.Empty;
+        [FormerlySerializedAs("m_ScenePath")] [SerializeField] private string m_Path = string.Empty;
 
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace UnityEngine
         /// While in the editor, this path will always be up to date (if asset was moved or renamed).
         /// If the referred scene asset was deleted, the path will remain as is.
         /// </summary>
-        public string ScenePath
+        public string Path
         {
             get
             {
@@ -51,21 +52,21 @@ namespace UnityEngine
                 AutoUpdateReference();
 #endif
 
-                return m_ScenePath;
+                return m_Path;
             }
 
             set
             {
-                m_ScenePath = value;
+                m_Path = value;
 
 #if UNITY_EDITOR
-                if (string.IsNullOrEmpty(m_ScenePath))
+                if (string.IsNullOrEmpty(m_Path))
                 {
                     m_SceneAsset = null;
                     return;
                 }
 
-                m_SceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(m_ScenePath);
+                m_SceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(m_Path);
                 if (m_SceneAsset == null)
                 {
                     Debug.LogError(
@@ -80,22 +81,22 @@ namespace UnityEngine
         /// <summary>
         /// Returns the name of the scene without the extension.
         /// </summary>
-        public string SceneName => Path.GetFileNameWithoutExtension(ScenePath);
+        public string Name => System.IO.Path.GetFileNameWithoutExtension(Path);
 
-        public bool IsEmpty => string.IsNullOrEmpty(ScenePath);
+        public bool IsEmpty => string.IsNullOrEmpty(Path);
 
         public SceneReference()
         {
         }
 
-        public SceneReference(string scenePath)
+        public SceneReference(string path)
         {
-            ScenePath = scenePath;
+            Path = path;
         }
 
         public SceneReference(SceneReference other)
         {
-            m_ScenePath = other.m_ScenePath;
+            m_Path = other.m_Path;
 
 #if UNITY_EDITOR
             m_SceneAsset = other.m_SceneAsset;
@@ -109,7 +110,7 @@ namespace UnityEngine
 
         public override string ToString()
         {
-            return m_ScenePath;
+            return m_Path;
         }
 
         [Obsolete("Needed for the editor, don't use it in runtime code!", true)]
@@ -142,10 +143,10 @@ namespace UnityEngine
         {
             if (m_SceneAsset == null)
             {
-                if (string.IsNullOrEmpty(m_ScenePath))
+                if (string.IsNullOrEmpty(m_Path))
                     return;
 
-                SceneAsset foundAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(m_ScenePath);
+                SceneAsset foundAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(m_Path);
                 if (foundAsset)
                 {
                     m_SceneAsset = foundAsset;
@@ -164,9 +165,9 @@ namespace UnityEngine
                 if (string.IsNullOrEmpty(foundPath))
                     return;
 
-                if (foundPath != m_ScenePath)
+                if (foundPath != m_Path)
                 {
-                    m_ScenePath = foundPath;
+                    m_Path = foundPath;
                     m_IsDirty = true;
 
                     if (!Application.isPlaying)
